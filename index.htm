@@ -4,7 +4,6 @@
     <title>World's Tallest Buildings</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
-    <link rel="stylesheet" href="http://cdn.jsdelivr.net/tipsy/1.0/stylesheets/tipsy.css" type="text/css">
   </head>
   <body>
 
@@ -26,10 +25,9 @@
     <!-- templates -->
 
     <script type="text/template" id="tooltip-template">
-        <h4><%=Building%></h4>
-        <div>(<%=parseInt(Height,10)%>m)</div>
-        <div><%=Built%></div>
-        <div><%=City%>, <%=Country%></div>
+        <div><b><%=Building%> (<%=Built%>)</b></div>
+        <div><%=parseInt(Height,10)%>m, <%=parseInt(Floors,10)%> floors</div>
+        <div><%=City%></div>
     </script>
 
     <script type="text/template" id="filter-template">
@@ -48,8 +46,6 @@
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="http://d3js.org/d3.v3.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
-    <script src="http://cdn.jsdelivr.net/tipsy/1.0/javascripts/jquery.tipsy.js"></script>
-
     <!-- For convenience, in reality should be  jsonp request. -->
     <script src="building-json.js" defer="defer"></script>
 
