@@ -2,8 +2,9 @@
 
   'use strict';
 
-  var width = $(window).width(),
-	  height = $(window).height(),
+  var MIN_SIZE = 600,
+  	  width = Math.max(MIN_SIZE, $(window).width()),
+	  height = Math.max(MIN_SIZE, $(window).height()),
 	  radius = Math.min(width, height) / 2,
 	  centerRadius = radius * 0.2,
 	  color = d3.scale.category20(),
@@ -18,12 +19,23 @@
   }
 
   function onResize() {
-  	// TODO: this doesn't work!
-  	console.log('onresize', Date.now());
-  	var width = $(window).width(),
-	  height = $(window).height();
-	d3.select("#chart svg").attr({"width" : width, "height":  height });
-	onFilterViewChange();
+
+  	var newwidth = Math.max(MIN_SIZE, $(window).width()),
+  		newheight = Math.max(MIN_SIZE, $(window).height());
+
+  	var scale = Math.min(newwidth, newheight) / Math.min(width, height);
+
+	d3.select("#chart svg")
+		.attr({"width" : newwidth, "height":  newheight })
+		.select('g')
+		.attr("transform", "translate(" + newwidth / 2 + "," + newheight / 2 + ")");
+
+	//d3.select('#chart svg').attr('transform', 'scale(' + scale + ')');
+
+	tooltip.style({
+			left:  ((newwidth/2)-centerRadius) + 'px',
+	    	top : (newheight/2) + 'px',
+	});
   }
 
   function getDecade(year) { return (Math.floor(parseInt(year,10) / 10) * 10); }
@@ -40,14 +52,14 @@
   function setProperties(item) {
   	item
 	.attr("display", function display(d) { return d.depth ? null : "none"; }) // hide inner ring
-	.attr("d", function(d) { return d.children ? null : arc(d); })
+	.attr("d", function setd(d) { return d.children ? null : arc(d || 0); })
 	.style("stroke", "#fff").style("fill", function fill(d) { return color((d.children ? d : d.parent).group); })
-	.on("mouseover", function(d, o, p) {
+	.on("mouseover", function onMouseover(d, o, p) {
 	  	this.style.stroke="#000";
 	  	tooltip.html(_.template($('#tooltip-template').html(), d))
 	  	console.log(this);
 	 })
-	.on('mouseout', function(d, o) {
+	.on('mouseout', function onMouseout(d, o) {
 	  	this.style.stroke="#fff";
 	  	tooltip.html('');
 	 });
@@ -55,7 +67,7 @@
 
   function displayChart(data) {
 	var eles = svg.datum(data).selectAll("path")
-	  .data(partition.nodes, function(d) { return d.Building + d.Rank; })
+	  .data(partition.nodes, function ranking(d) { return d && (d.Building + d.Rank); })
 	  .enter()
 	  .append("path");
 	setProperties(eles);
@@ -63,7 +75,6 @@
 
   function redraw(data) {
 	var items = svg.datum(data).selectAll("path").data(partition.nodes);
-
 	items.transition().duration(300)
 	.attr("display", function display(d) { return d.depth ? null : "none"; }) // hide inner ring
 	.attr("d", function(d) { return d.children ? null : arc(d); })
@@ -101,7 +112,7 @@
 
   function init() {
 	svg = d3.select("#chart")
-	  .append("svg").attr({"width" : width, "height" : height})
+	  .append("svg").attr({"width" : width * 0.9, "height" : height * 0.9})
 	  .append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 	arc = d3.svg.arc()
@@ -124,8 +135,14 @@
 		  return memo; 
 		}, { Country : [], Decade : [] }) 
 	}));
+
 	// event handling
-	d3.selectAll('select, input').on("change", onFilterViewChange);
+	d3.selectAll('select, input').on("change", function(d) {
+		d3.select('#form label.selected').attr('class', '');
+		d3.select(this.parentNode).attr('class', 'selected');
+		onFilterViewChange();
+	});
+
 	// load initial chart
 	displayChart({ group : 'All', children : BUILDINGS });
 
