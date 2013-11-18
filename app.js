@@ -138,8 +138,10 @@
 
 	// event handling
 	d3.selectAll('select, input').on("change", function(d) {
-		d3.select('#form label.selected').attr('class', '');
-		d3.select(this.parentNode).attr('class', 'selected');
+		if(this.tagName=='INPUT') {
+			d3.select('#form label.selected').attr('class', '');
+			d3.select(this.parentNode).attr('class', 'selected');
+		}
 		onFilterViewChange();
 	});
 
